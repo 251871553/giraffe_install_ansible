@@ -1,0 +1,40 @@
+---
+- hosts: giraffe
+  vars:
+  remote_user: app
+  tasks:
+    - name: test connection
+      ping:
+
+    - name: add   user  app
+      user: name=app groups=app  state=present
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: create  dir
+      file: path=/data/app state=directory
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: change authority
+      file: path=/data/app owner=app group=app mode=755     recurse=yes
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: decompression
+      unarchive: src=giraffe-all-3.6.3.tar.gz dest=/data/app owner=app group=app mode=755
+#      remote_user: app
+#      sudo: yes
+#      sudo_user: root
+
+    - name: check app  status
+      shell: 'ps aux | grep java | grep names | grep -v grep'
+      register: result
+      ignore_errors: True
+
+    - name: start  app
+      shell: source /etc/profile ; cd /data/app/giraffe/bin/ ; nohup sh /data/app/giraffe/bin/mqnamesrv > /dev/null  2>&1 &
+      when: result | failed

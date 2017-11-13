@@ -1,0 +1,6 @@
+[giraffe]
+10.0.17.162 ansible_ssh_port=22 ansible_ssh_user=app ansible_ssh_pass=app1234! ansible_sudo_pass=app1234!
+10.0.17.212 ansible_ssh_port=22 ansible_ssh_user=app ansible_ssh_pass=app1234! ansible_sudo_pass=app1234!
+
+[zookeeper]
+10.0.17.162 ansible_ssh_port=22 ansible_ssh_user=app ansible_ssh_pass=app1234! ansible_sudo_pass=app1234!

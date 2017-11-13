@@ -1,0 +1,63 @@
+---
+- hosts: giraffe
+  vars:
+    zk_server_address: 8.8.8.8:2181
+  remote_user: app
+  tasks:
+    - name: test connection
+      ping:
+
+    - name: ensure libselinux-python is at the latest version
+      yum: pkg=libselinux-python,dos2unix,unzip state=latest
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: add   user  app
+      user: name=app groups=app  state=present
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: create  dir
+      file: path=/data/app state=directory
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: change authority
+      file: path=/data/app owner=app group=app mode=755     recurse=yes
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: decompression
+      unarchive: src=ns-sync-server.zip dest=/data/app owner=app group=app mode=755
+#      remote_user: app
+#      sudo: yes
+#      sudo_user: root
+
+    - name: modify zk.server.address
+      lineinfile: dest=/data/app/ns-sync-server/etc/application.properties
+                  regexp=^zk.server.address=.*$
+                  line=brokerClusterName={{zk_server_address}}
+                  backrefs=yes
+
+
+    - name: dos2unix
+      shell: 'dos2unix /data/app/ns-sync-server/etc/application.properties'
+
+
+    - name: check app  status
+      shell: 'ps aux | grep java | grep ns-sync | grep -v grep'
+      register: result
+      ignore_errors: True
+
+#    - name: pass
+    #      command: touch  /tmp/true.txt
+    #      when: result | success
+
+    - name: start  app
+      shell: source /etc/profile ; cd /data/app/ns-sync-server/tools ; nohup sh  /data/app/ns-sync-server/tools/start.sh   >  /dev/null 2>&1  &
+      when: result | failed
+

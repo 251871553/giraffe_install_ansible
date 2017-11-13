@@ -1,0 +1,88 @@
+---
+- hosts: giraffe
+  vars:
+    brokerClusterName: DefaultCluster
+    brokerName: broker-a
+    brokerId: 0
+    brokerRole: SYNC_MASTER
+    fetchNsWebIp: 8.8.8.8
+  remote_user: app
+  tasks:
+    - name: test connection
+      ping:
+
+    - name: ensure libselinux-python is at the latest version
+      yum: pkg=libselinux-python,dos2unix state=latest
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: add   user  app
+      user: name=app groups=app  state=present
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: create  dir
+      file: path=/data/app state=directory
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: change authority
+      file: path=/data/app owner=app group=app mode=755     recurse=yes
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: decompression
+      unarchive: src=giraffe-all-3.6.3.tar.gz dest=/data/app owner=app group=app mode=755
+#      remote_user: app
+#      sudo: yes
+#      sudo_user: root
+
+    - name: modify brokerClusterName
+      lineinfile: dest=/data/app/giraffe/conf/broker.properties 
+                  regexp=^brokerClusterName=.*$
+                  line=brokerClusterName={{brokerClusterName}}
+                  backrefs=yes
+    - name: modify brokerName
+      lineinfile: dest=/data/app/giraffe/conf/broker.properties 
+                  regexp=^brokerName=.*$
+                  line=brokerName={{brokerName}}
+                  backrefs=yes
+
+    - name: modify brokerId
+      lineinfile: dest=/data/app/giraffe/conf/broker.properties 
+                  regexp='^brokerId=.*$'
+                  line=brokerId={{brokerId}}
+                  backrefs=yes
+
+    - name: modify brokerRole
+      lineinfile: dest=/data/app/giraffe/conf/broker.properties 
+                  regexp=^brokerRole=.*$
+                  line=brokerRole={{brokerRole}}
+                  backrefs=yes
+
+    - name: modify fetchNsWebIp
+      lineinfile: dest=/data/app/giraffe/conf/broker.properties 
+                  regexp=^fetchNsWebIp=.*$
+                  line=fetchNsWebIp={{fetchNsWebIp}}
+                  backrefs=yes
+
+    - name: dos2unix
+      shell: 'dos2unix /data/app/giraffe/conf/broker.properties'
+
+
+    - name: check app  status
+      shell: 'ps aux | grep java | grep broker | grep -v grep'
+      register: result
+      ignore_errors: True
+
+#    - name: pass
+#      command: touch  /tmp/true.txt
+#      when: result | success
+
+    - name: start  app
+      shell: source /etc/profile ; cd /data/app/giraffe/bin/ ;nohup sh /data/app/giraffe/bin/mqbroker  -c ../conf/broker.properties > /dev/null  2>&1 & 
+      when: result | failed

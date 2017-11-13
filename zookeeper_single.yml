@@ -1,0 +1,85 @@
+---
+- hosts: zookeeper
+  vars:
+    dataDir: ../data
+    dataLogDir: ./dataLog
+    clientPort: 6181
+  remote_user: app
+  tasks:
+    - name: test connection
+      ping:
+
+    - name: ensure libselinux-python is at the latest version
+      yum: pkg=libselinux-python,dos2unix,unzip state=latest
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: add   user  app
+      user: name=app groups=app  state=present
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: create   /data/app
+      file: path=/data/app state=directory
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: change authority
+      file: path=/data/app owner=app group=app mode=755     recurse=yes
+      remote_user: app
+      sudo: yes
+      sudo_user: root
+
+    - name: decompression
+      unarchive: src=zookeeper-3.4.11.tar.gz dest=/data/app owner=app group=app mode=755
+
+    - name: create   zk link
+      file: src=/data/app/zookeeper-3.4.11  path=/data/app/zookeeper state=link
+
+    - name: create   zk data dir
+      file: path=/data/app/zookeeper/data state=directory
+
+    - name: create   zk datalog dir
+      file: path=/data/app/zookeeper/dataLog state=directory
+
+    - name: create   zoo.cfg
+      shell: "cat  /data/app/zookeeper/conf/zoo_sample.cfg | grep  -v  '#'   |  grep  -v  '^$' >  /data/app/zookeeper/conf/zoo.cfg "
+
+    - name: modify zoo.cfg  dataDir
+      lineinfile: dest=/data/app/zookeeper/conf/zoo.cfg
+                  regexp=^dataDir=.*$
+                  line=dataDir={{dataDir}}
+                  backrefs=no
+
+    - name: modify zoo.cfg  dataLogDir
+      lineinfile: dest=/data/app/zookeeper/conf/zoo.cfg
+                  regexp=^dataLogDir=.*$
+                  line=dataLogDir={{dataLogDir}}
+                  backrefs=no
+
+    - name: modify zoo.cfg  clientPort
+      lineinfile: dest=/data/app/zookeeper/conf/zoo.cfg
+                  regexp=^clientPort=.*$
+                  line=clientPort={{clientPort}}
+                  backrefs=no
+
+    - name: dos2unix
+      shell: 'dos2unix /data/app/zookeeper/conf/zoo.cfg'
+
+
+    - name: check app  status
+      shell: 'ps aux | grep java | grep zookeeper | grep -v grep'
+      register: result
+      ignore_errors: True
+
+#    - name: pass
+    #      command: touch  /tmp/true.txt
+    #      when: result | success
+
+    - name: start  app
+      shell: source /etc/profile ; cd /data/app/zookeeper/bin ; sh  zkServer.sh start  
+      when: result | failed
+
