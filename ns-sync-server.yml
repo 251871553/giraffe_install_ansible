@@ -40,7 +40,7 @@
     - name: modify zk.server.address
       lineinfile: dest=/data/app/ns-sync-server/etc/application.properties
                   regexp=^zk.server.address=.*$
-                  line=brokerClusterName={{zk_server_address}}
+                  line=zk_server_address={{zk_server_address}}
                   backrefs=yes
 
 
