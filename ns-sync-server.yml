@@ -1,7 +1,9 @@
 ---
-- hosts: giraffe
+- hosts: ns-sync-server
   vars:
-    zk_server_address: 8.8.8.8:2181
+     #Compression package support only
+     ns_sync_pkg: ns-sync-server.tar.gz
+     zk_server_address: 10.21.16.137:6181
   remote_user: app
   tasks:
     - name: test connection
@@ -32,15 +34,12 @@
       sudo_user: root
 
     - name: decompression
-      unarchive: src=ns-sync-server.zip dest=/data/app owner=app group=app mode=755
-#      remote_user: app
-#      sudo: yes
-#      sudo_user: root
+      unarchive: src={{ns_sync_pkg}} dest=/data/app owner=app group=app mode=755
 
     - name: modify zk.server.address
       lineinfile: dest=/data/app/ns-sync-server/etc/application.properties
                   regexp=^zk.server.address=.*$
-                  line=zk_server_address={{zk_server_address}}
+                  line=zk.server.address={{zk_server_address}}
                   backrefs=yes
 
 

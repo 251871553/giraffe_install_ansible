@@ -1,6 +1,8 @@
 ---
-- hosts: giraffe
+- hosts: giraffe_nameserver
   vars:
+     #Compression package support only
+      nameserver_pkg: giraffe_nameserver.tar.gz
   remote_user: app
   tasks:
     - name: test connection
@@ -25,10 +27,7 @@
       sudo_user: root
 
     - name: decompression
-      unarchive: src=giraffe-all-3.6.3.tar.gz dest=/data/app owner=app group=app mode=755
-#      remote_user: app
-#      sudo: yes
-#      sudo_user: root
+      unarchive: src={{nameserver_pkg}} dest=/data/app owner=app group=app mode=755
 
     - name: check app  status
       shell: 'ps aux | grep java | grep names | grep -v grep'

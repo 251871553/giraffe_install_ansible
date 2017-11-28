@@ -1,11 +1,8 @@
 ---
-- hosts: giraffe
+- hosts: giraffe_broker
   vars:
-    brokerClusterName: DefaultCluster
-    brokerName: broker-a
-    brokerId: 0
-    brokerRole: SYNC_MASTER
-    fetchNsWebIp: 8.8.8.8
+     #Compression package support only
+     broker_pkg: giraffe_broker.tar.gz
   remote_user: app
   tasks:
     - name: test connection
@@ -36,10 +33,7 @@
       sudo_user: root
 
     - name: decompression
-      unarchive: src=giraffe-all-3.6.3.tar.gz dest=/data/app owner=app group=app mode=755
-#      remote_user: app
-#      sudo: yes
-#      sudo_user: root
+      unarchive: src={{broker_pkg}} dest=/data/app owner=app group=app mode=755
 
     - name: modify brokerClusterName
       lineinfile: dest=/data/app/giraffe/conf/broker.properties 
@@ -62,6 +56,12 @@
       lineinfile: dest=/data/app/giraffe/conf/broker.properties 
                   regexp=^brokerRole=.*$
                   line=brokerRole={{brokerRole}}
+                  backrefs=yes
+
+    - name: modify flushDiskType
+      lineinfile: dest=/data/app/giraffe/conf/broker.properties 
+                  regexp=^flushDiskType=.*$
+                  line=flushDiskType={{flushDiskType}}
                   backrefs=yes
 
     - name: modify fetchNsWebIp

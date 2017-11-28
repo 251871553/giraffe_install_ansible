@@ -1,6 +1,43 @@
-[giraffe]
-10.0.17.162 ansible_ssh_port=22 ansible_ssh_user=app ansible_ssh_pass=app1234! ansible_sudo_pass=app1234!
-10.0.17.212 ansible_ssh_port=22 ansible_ssh_user=app ansible_ssh_pass=app1234! ansible_sudo_pass=app1234!
+[giraffe_nameserver]
+10.21.16.140
+10.21.16.139
+
+[giraffe_nameserver:vars]
+ssh_port=22
+ansible_ssh_user=app
+ansible_ssh_pass=app1234!
+ansible_sudo_pass=app1234!
+
+[giraffe_broker]
+#if SLAVE:
+#   flushDiskType=SYNC_FLUSH
+#else
+#   flushDiskType=ASYNC_FLUSH
+10.0.17.162  brokerName=broker-a  brokerId=100  brokerRole=SYNC_MASTER  flushDiskType=SYNC_FLUSH fetchNsWebIp=8.8.8.8
+10.0.17.212  brokerName=broker-a  brokerId=200  brokerRole=SLAVE  flushDiskType=SYNC_FLUSH fetchNsWebIp=8.8.8.8
+
+[giraffe_broker:vars]
+ansible_ssh_port=22
+ansible_ssh_user=app
+ansible_ssh_pass=app1234!
+ansible_sudo_pass=app1234!
+#app config
+brokerClusterName=DefaultCluster
+
+[ns-sync-server]
+10.21.16.140
+
+[ns-sync-server:vars]
+ssh_port=22
+ansible_ssh_user=app
+ansible_ssh_pass=app1234!
+ansible_sudo_pass=app1234!
 
 [zookeeper]
-10.0.17.162 ansible_ssh_port=22 ansible_ssh_user=app ansible_ssh_pass=app1234! ansible_sudo_pass=app1234!
+10.0.17.162 
+
+[zookeeper:vars]
+ssh_port=22 
+ansible_ssh_user=app
+ansible_ssh_pass=app1234!
+ansible_sudo_pass=app1234!

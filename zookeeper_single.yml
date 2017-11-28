@@ -4,6 +4,7 @@
     dataDir: ../data
     dataLogDir: ./dataLog
     clientPort: 6181
+    zk_pkg: zookeeper-3.4.11.tar.gz
   remote_user: app
   tasks:
     - name: test connection
@@ -34,7 +35,7 @@
       sudo_user: root
 
     - name: decompression
-      unarchive: src=zookeeper-3.4.11.tar.gz dest=/data/app owner=app group=app mode=755
+      unarchive: src={{zk_pkg}} dest=/data/app owner=app group=app mode=755
 
     - name: create   zk link
       file: src=/data/app/zookeeper-3.4.11  path=/data/app/zookeeper state=link
